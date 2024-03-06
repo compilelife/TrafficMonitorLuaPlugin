@@ -3,13 +3,13 @@
 本项目支持用lua开发TrafficMonitor插件，尽可能降低开发难度。
 
 
-# 安装
+# 1. 安装
 
 在release页面下载zip后，解压到[TrafficMonitor的插件目录](https://github.com/zhongyang219/TrafficMonitorPlugins/blob/main/README.md)即可
 
 压缩包自带若干lua编写的插件，可以在“显示设置”中启用。
 
-# lua插件开发指南
+# 2. lua插件开发指南
 
 可以参考[plugins](./plugins/)目录下的例子。
 
@@ -50,6 +50,16 @@ end
 如```hello world[smile]```会被渲染为`hello world?`
 
 应将`xxx.ico`放在lua文件同级的images目录下（将来可能变动）。
+
+## 运行命令行
+
+本项目为lua插件提供了一些扩展，统一放在命名空间tf下。
+
+要运行本地命令，可以调用`tf.runCmdLine`以获得标准输出和标准错误的内容。
+
+## 访问监控信息
+
+可通过`tf.monitorInfo`获取监控信息。具体字段见[PluginInterface.h](./PluginInterface.h)
 
 # Demo
 
