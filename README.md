@@ -61,15 +61,15 @@ end
 
 可通过`tf.monitorInfo`获取监控信息。具体字段见[PluginInterface.h](./PluginInterface.h)
 
-# Demo
+# 3. Demo
 
 在[plugins](./plugins/)目录下有我编写的几个例子
 
 - 显卡监测.lua：调用`nvidia-smi`获取并显示GPU使用率
 - 赚钱.lua：实时显示当日打工挣了多少钱（创意来自macos上的某个插件，忘记名字了……）
 
-# 开发计划
+# 4. 开发计划
 
-- [ ] 开发一个可视化的“测试”界面，方便lua脚本编写时测试
 - [ ] 图标显示优化；以及考虑把图标和每个lua脚本放一起，而不是都放在images里
+- [ ] 开发一个可视化的“测试”界面，方便lua脚本编写时测试
 - [ ] 继续上传更多有用/有趣的插件
