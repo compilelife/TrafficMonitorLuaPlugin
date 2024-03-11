@@ -101,27 +101,7 @@ void registerLuaExtension(lua_State* L) {
 		.endNamespace();
 }
 
-class IconCache {
-public:
-	HICON findOrLoad(string name) {
-		auto it = mCache.find(name);
-		if (it != mCache.end()) {
-			return (*it).second;
-		}
-		else {
-			auto path = CDataManager::Instance().PluginPath() + "\\lua\\images\\" + CString(name.c_str())+".ico";
-			//TODO:加载icon
-			auto ret = (HICON)LoadImage(NULL, path, IMAGE_ICON, IMAGE_SIZE, IMAGE_SIZE, LR_LOADFROMFILE);
-			if (ret) {
-				mCache[name] = ret;	
-			}
-			return ret;
-		}
-	}
-	map<string, HICON> mCache;
-};
 
-static IconCache gIconCache;
 
 //不要忘记在使用完wchar_t*后delete[]释放内存
 wchar_t* multiByteToWideChar(const string& pKey)
@@ -138,12 +118,18 @@ wchar_t* multiByteToWideChar(const string& pKey)
 void LuaScriptManager::init(CString path)
 {
 	CFileFind finder;
-	auto found = finder.FindFile(path+"\\lua\\*.lua");
+	auto found = finder.FindFile(path+"\\lua\\*");
 	while (found)
 	{
 		found = finder.FindNextFile();
 		auto name = finder.GetFileName();
+		if (name == "." || name == "..")
+			continue;
+
 		auto path = finder.GetFilePath();
+		if (finder.IsDirectory()) {
+			path += "\\main.lua";
+		}
 		auto item = createItem(path, name);
 		if (item) {
 			mItems.push_back(item);
@@ -188,6 +174,7 @@ LuaItem* LuaScriptManager::createItem(CString path, CString name)
 	}
 
 	auto item = new LuaItem(L, name);
+	item->mImgDir = path.Left(path.ReverseFind('\\'));
 	
 	//执行一次数据获取工作，确保interval为0的可以有数据
 	item->onUpdate();
@@ -277,7 +264,7 @@ void LuaItem::DrawItem(void* hDC, int x, int y, int w, int h, bool dark_mode)
 
 	for (auto seg : mSegs) {
 		if (seg.hasImage()) {
-			auto hicon = gIconCache.findOrLoad(seg.image);
+			auto hicon = findOrLoadImage(seg.image);
 			if (!hicon)
 				continue;
 			auto iconSize = gData.DPI(IMAGE_SIZE);
@@ -300,6 +287,21 @@ int LuaItem::OnMouseEvent(MouseEventType type, int x, int y, void* hWnd, int fla
 		return 1;
 	}
 	return 0;
+}
+
+HICON LuaItem::findOrLoadImage(string name) {
+	auto it = mCache.find(name);
+	if (it != mCache.end()) {
+		return (*it).second;
+	}
+	else {
+		auto path = mImgDir + "\\" + CString(name.c_str()) + ".ico";
+		auto ret = (HICON)LoadImage(NULL, path, IMAGE_ICON, IMAGE_SIZE, IMAGE_SIZE, LR_LOADFROMFILE);
+		if (ret) {
+			mCache[name] = ret;
+		}
+		return ret;
+	}
 }
 
 vector<segment> LuaItem::parseValue(string value) const

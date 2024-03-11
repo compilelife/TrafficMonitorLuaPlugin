@@ -2,6 +2,7 @@
 #include <vector>
 #include <string.h>
 #include "PluginInterface.h"
+#include <map>
 #include "log.h"
 
 using namespace std;
@@ -17,6 +18,7 @@ struct segment {
 };
 
 #define IMAGE_SIZE 16
+
 
 //doc:https://github.com/zhongyang219/TrafficMonitor/wiki/%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97
 //按照自定义绘制的流程
@@ -35,7 +37,10 @@ public:
 	virtual int GetItemWidthEx(void* hDC) const override;
 	virtual void DrawItem(void* hDC, int x, int y, int w, int h, bool dark_mode) override;
 	virtual int OnMouseEvent(MouseEventType type, int x, int y, void* hWnd, int flag) override;
+
+	HICON findOrLoadImage(string name);
 	ULONGLONG mLastTick{ 0 };
+	CString mImgDir;
 protected:
 	lua_State* L{ nullptr };
 private:
@@ -46,6 +51,7 @@ private:
 	wchar_t* mName{ nullptr };
 	wchar_t* mId{ nullptr };
 	wchar_t* mSample{ nullptr };
+	map<string, HICON> mCache;
 	vector<segment> mSegs;
 };
 
