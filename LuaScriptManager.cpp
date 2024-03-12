@@ -262,20 +262,39 @@ void LuaItem::DrawItem(void* hDC, int x, int y, int w, int h, bool dark_mode)
 
 	auto& gData = CDataManager::Instance();
 
+	auto onlyText = true;
 	for (auto seg : mSegs) {
 		if (seg.hasImage()) {
-			auto hicon = findOrLoadImage(seg.image);
-			if (!hicon)
-				continue;
-			auto iconSize = gData.DPI(IMAGE_SIZE);
-			::DrawIconEx(pDC->GetSafeHdc(), x, y, hicon, iconSize, iconSize, 0, NULL, DI_NORMAL);
-			x += iconSize;
+			onlyText = false;
+			break;
 		}
-		else {
-			CRect textRect = rect;
-			textRect.left = x;
-			pDC->DrawText(seg.text.c_str(), textRect, DT_VCENTER | DT_LEFT | DT_SINGLELINE | DT_NOPREFIX);
-			x += estimateTextWidth(pDC, seg.text);
+	}
+
+	if (onlyText) {
+		string text;
+		for (auto seg : mSegs) {
+			text += seg.text;
+		}
+		auto multiLine = (h > g_data.DPI(30));
+		UINT flag = multiLine ? (DT_NOPREFIX | DT_WORDBREAK) : (DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+		pDC->DrawText(text.c_str(), rect, flag);
+	}
+	else {
+		for (auto seg : mSegs) {
+			if (seg.hasImage()) {
+				auto hicon = findOrLoadImage(seg.image);
+				if (!hicon)
+					continue;
+				auto iconSize = gData.DPI(IMAGE_SIZE);
+				::DrawIconEx(pDC->GetSafeHdc(), x, y, hicon, iconSize, iconSize, 0, NULL, DI_NORMAL);
+				x += iconSize;
+			}
+			else {
+				CRect textRect = rect;
+				textRect.left = x;
+				pDC->DrawText(seg.text.c_str(), textRect, DT_LEFT | DT_SINGLELINE | DT_NOPREFIX);
+				x += estimateTextWidth(pDC, seg.text);
+			}
 		}
 	}
 }
@@ -283,7 +302,9 @@ void LuaItem::DrawItem(void* hDC, int x, int y, int w, int h, bool dark_mode)
 int LuaItem::OnMouseEvent(MouseEventType type, int x, int y, void* hWnd, int flag)
 {
 	if (type == MouseEventType::MT_LCLICKED) {
-		getGlobal(L, "onClick")();
+		auto value = getGlobal(L, "onClick")().cast<string>();
+		if (!value.empty())
+			mSegs = parseValue(value);
 		return 1;
 	}
 	return 0;

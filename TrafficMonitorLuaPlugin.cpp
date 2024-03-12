@@ -120,7 +120,7 @@ void test() {
     plugin->DataRequired();
 
     HDC hDC = ::GetDC(HWND_DESKTOP);
-    auto width = plugin->GetItem(0)->GetItemWidthEx(hDC);
+    auto width = plugin->GetItem(1)->GetItemWidthEx(hDC);
     plugin->GetItem(1)->DrawItem(hDC, 50, 50, width, 16, false);
     ::ReleaseDC(HWND_DESKTOP, hDC);
 }
